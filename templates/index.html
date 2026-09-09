@@ -81,6 +81,31 @@
         .modal-btn { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white; padding: 12px 30px; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; width: 100%; font-family: 'Inter', sans-serif; transition: all 0.2s; }
         .modal-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(231,76,60,0.35); }
         
+        /* Risk Analysis Styles */
+        .risk-section { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-top: 24px; }
+        .risk-section h3 { font-size: 1em; font-weight: 600; color: #1a1a2e; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .risk-item { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #f5f5f5; }
+        .risk-item:last-child { border-bottom: none; }
+        .risk-dot { width: 10px; height: 10px; border-radius: 50%; margin-right: 12px; flex-shrink: 0; }
+        .risk-info { flex: 1; }
+        .risk-name { font-size: 0.9em; font-weight: 500; color: #333; }
+        .risk-value { font-size: 0.8em; color: #666; }
+        .risk-level { font-size: 0.75em; font-weight: 600; padding: 4px 10px; border-radius: 20px; }
+        .risk-level.high { background: #fee2e2; color: #dc2626; }
+        .risk-level.moderate { background: #fef3c7; color: #d97706; }
+        .risk-level.low { background: #dbeafe; color: #2563eb; }
+        .risk-level.normal { background: #d1fae5; color: #059669; }
+        
+        /* Contribution Chart */
+        .contribution-section { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-top: 24px; }
+        .contribution-section h3 { font-size: 1em; font-weight: 600; color: #1a1a2e; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .contribution-section img { width: 100%; border-radius: 10px; }
+        
+        /* Download Button */
+        .download-section { margin-top: 16px; }
+        .btn-download { background: linear-gradient(135deg, #00b894 0%, #00cec9 100%); color: white; padding: 12px 20px; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+        .btn-download:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(0,184,148,0.35); }
+        
         @media (max-width: 768px) {
             .main-grid { grid-template-columns: 1fr; }
             .form-grid { grid-template-columns: 1fr; }
@@ -144,6 +169,19 @@
                     </div>
                     <button type="submit" class="btn-predict">Predict Diabetes Risk</button>
                 </form>
+
+                {% if result %}
+                <div class="download-section">
+                    <form method="POST" action="/download-report">
+                        {% for feature in FEATURES %}
+                        <input type="hidden" name="{{ feature }}" value="{{ values[feature] }}">
+                        {% endfor %}
+                        <button type="submit" class="btn-download">
+                            Download PDF Report
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
             </div>
 
             <div>
@@ -185,6 +223,29 @@
                 </div>
             </div>
         </div>
+
+        {% if result %}
+        <!-- Risk Analysis Section -->
+        <div class="risk-section">
+            <h3><span class="icon">Risk Factor Analysis</span></h3>
+            {% for factor in risk_factors %}
+            <div class="risk-item">
+                <div class="risk-dot" style="background: {{ factor.color }};"></div>
+                <div class="risk-info">
+                    <div class="risk-name">{{ factor.display_name }}</div>
+                    <div class="risk-value">{{ factor.value }} {% if factor.unit %}{{ factor.unit }}{% endif %} (Normal: {{ factor.healthy_range }})</div>
+                </div>
+                <span class="risk-level {{ 'high' if 'High' in factor.level else ('moderate' if 'Moderate' in factor.level else ('low' if 'Low' in factor.level else 'normal')) }}">{{ factor.level }}</span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Feature Contribution Chart -->
+        <div class="contribution-section">
+            <h3><span class="icon">Feature Contribution to Prediction</span></h3>
+            <img src="data:image/png;base64,{{ chart_image }}" alt="Feature Contribution Chart">
+        </div>
+        {% endif %}
 
         <div class="toggle-section">
             <button class="toggle-btn" id="toggleCharts" onclick="toggleCharts()">

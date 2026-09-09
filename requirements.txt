@@ -5,6 +5,5 @@ scikit-learn
 xgboost
 matplotlib
 seaborn
-shap
-lime
 joblib
+fpdf2
