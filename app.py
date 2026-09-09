@@ -172,7 +172,8 @@ def generate_contribution_chart(data, prediction):
             else:
                 deviation = (value - mid) / high
             
-            contribution = deviation * importance * prediction
+            # Use importance as weight, positive = risk, negative = protective
+            contribution = deviation * importance
             contributions.append({
                 'feature': FEATURE_NAMES[feature],
                 'contribution': contribution
