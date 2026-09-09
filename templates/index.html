@@ -173,9 +173,14 @@
                 {% if result %}
                 <div class="download-section">
                     <form method="POST" action="/download-report">
-                        {% for feature in FEATURES %}
-                        <input type="hidden" name="{{ feature }}" value="{{ values[feature] }}">
-                        {% endfor %}
+                        <input type="hidden" name="Pregnancies" value="{{ values.Pregnancies }}">
+                        <input type="hidden" name="Glucose" value="{{ values.Glucose }}">
+                        <input type="hidden" name="BloodPressure" value="{{ values.BloodPressure }}">
+                        <input type="hidden" name="SkinThickness" value="{{ values.SkinThickness }}">
+                        <input type="hidden" name="Insulin" value="{{ values.Insulin }}">
+                        <input type="hidden" name="BMI" value="{{ values.BMI }}">
+                        <input type="hidden" name="DiabetesPedigreeFunction" value="{{ values.DiabetesPedigreeFunction }}">
+                        <input type="hidden" name="Age" value="{{ values.Age }}">
                         <button type="submit" class="btn-download">
                             Download PDF Report
                         </button>
