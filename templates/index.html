@@ -4,94 +4,180 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Diabetes Prediction System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
-        .container { max-width: 900px; margin: 0 auto; }
-        .header { text-align: center; color: white; margin-bottom: 30px; }
-        .header h1 { font-size: 2.5em; margin-bottom: 10px; }
-        .header p { font-size: 1.1em; opacity: 0.9; }
-        .card { background: white; border-radius: 20px; padding: 30px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); margin-bottom: 20px; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; color: #333; }
-        .form-group input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 10px; font-size: 16px; transition: border-color 0.3s; }
-        .form-group input:focus { border-color: #667eea; outline: none; }
-        .btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 40px; border: none; border-radius: 10px; font-size: 18px; cursor: pointer; width: 100%; margin-top: 20px; transition: transform 0.2s; }
-        .btn:hover { transform: translateY(-2px); }
-        .result { text-align: center; padding: 20px; border-radius: 15px; margin-top: 20px; }
-        .result.safe { background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); color: white; }
-        .result.danger { background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white; }
-        .result h2 { font-size: 1.8em; margin-bottom: 10px; }
-        .result p { font-size: 1.1em; }
-        .charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-top: 30px; }
-        .chart-card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        .chart-card h3 { text-align: center; margin-bottom: 15px; color: #333; }
+        body { font-family: 'Inter', sans-serif; background: #f0f2f5; min-height: 100vh; }
+        
+        .top-bar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 20px; text-align: center; color: white; }
+        .top-bar h1 { font-size: 2.2em; font-weight: 700; margin-bottom: 8px; }
+        .top-bar p { font-size: 1em; opacity: 0.9; max-width: 500px; margin: 0 auto; }
+        
+        .container { max-width: 1100px; margin: -30px auto 40px; padding: 0 20px; }
+        
+        .main-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        
+        .card { background: white; border-radius: 16px; padding: 28px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .card-title { font-size: 1.1em; font-weight: 600; color: #1a1a2e; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+        .card-title .icon { font-size: 1.2em; }
+        
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .form-group { display: flex; flex-direction: column; }
+        .form-group label { font-size: 0.85em; font-weight: 500; color: #555; margin-bottom: 6px; }
+        .form-group input { padding: 12px 14px; border: 1.5px solid #e0e0e0; border-radius: 10px; font-size: 15px; font-family: 'Inter', sans-serif; transition: all 0.2s; background: #fafafa; }
+        .form-group input:focus { border-color: #667eea; outline: none; background: white; box-shadow: 0 0 0 3px rgba(102,126,234,0.1); }
+        .form-group .hint { font-size: 0.75em; color: #999; margin-top: 4px; }
+        
+        .btn-predict { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 14px; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 20px; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+        .btn-predict:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(102,126,234,0.35); }
+        
+        .result-card { border-radius: 16px; padding: 30px; text-align: center; margin-top: 0; }
+        .result-card.safe { background: linear-gradient(135deg, #00b894 0%, #00cec9 100%); color: white; }
+        .result-card.danger { background: linear-gradient(135deg, #e74c3c 0%, #fd79a8 100%); color: white; }
+        .result-emoji { font-size: 3em; margin-bottom: 10px; }
+        .result-label { font-size: 1.6em; font-weight: 700; margin-bottom: 15px; }
+        .result-details { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .result-item { background: rgba(255,255,255,0.2); border-radius: 10px; padding: 12px; }
+        .result-item .label { font-size: 0.8em; opacity: 0.9; }
+        .result-item .value { font-size: 1.3em; font-weight: 700; }
+        
+        .error { background: #fff5f5; color: #c0392b; padding: 15px; border-radius: 12px; text-align: center; border: 1px solid #fed7d7; }
+        
+        .model-info { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-top: 24px; }
+        .model-info h3 { font-size: 1em; font-weight: 600; color: #1a1a2e; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .model-table { width: 100%; border-collapse: collapse; }
+        .model-table th { text-align: left; font-size: 0.8em; color: #888; font-weight: 500; padding: 8px 12px; border-bottom: 1px solid #eee; }
+        .model-table td { padding: 10px 12px; font-size: 0.9em; border-bottom: 1px solid #f5f5f5; }
+        .model-table tr:last-child td { border-bottom: none; }
+        .model-table .best { background: #f0fff4; font-weight: 600; }
+        .model-table .best td:first-child { color: #00b894; }
+        .badge { display: inline-block; background: #00b894; color: white; font-size: 0.7em; padding: 3px 8px; border-radius: 20px; font-weight: 600; }
+        
+        .toggle-section { margin-top: 24px; }
+        .toggle-btn { background: white; border: 2px solid #e0e0e0; border-radius: 12px; padding: 14px 24px; font-size: 15px; font-weight: 600; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; color: #555; font-family: 'Inter', sans-serif; }
+        .toggle-btn:hover { border-color: #667eea; color: #667eea; }
+        .toggle-btn.active { background: #667eea; color: white; border-color: #667eea; }
+        
+        .charts { display: none; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 20px; }
+        .charts.show { display: grid; }
+        .chart-card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .chart-card h3 { text-align: center; margin-bottom: 12px; color: #1a1a2e; font-size: 0.95em; font-weight: 600; }
         .chart-card img { width: 100%; border-radius: 10px; }
-        .error { background: #fee; color: #c0392b; padding: 15px; border-radius: 10px; text-align: center; margin-top: 20px; }
+        
+        .footer { text-align: center; padding: 20px; color: #999; font-size: 0.85em; }
+        
+        @media (max-width: 768px) {
+            .main-grid { grid-template-columns: 1fr; }
+            .form-grid { grid-template-columns: 1fr; }
+            .charts { grid-template-columns: 1fr; }
+            .result-details { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>Diabetes Prediction System</h1>
-            <p>Enter patient details to predict diabetes risk using ML</p>
-        </div>
+    <div class="top-bar">
+        <h1>Diabetes Prediction System</h1>
+        <p>Enter patient medical data to predict diabetes risk using machine learning</p>
+    </div>
 
-        <div class="card">
-            <form method="POST" action="/predict">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label>Pregnancies</label>
-                        <input type="number" name="Pregnancies" step="0.1" required value="{{ values.Pregnancies if values else '' }}">
+    <div class="container">
+        <div class="main-grid">
+            <div class="card">
+                <div class="card-title"><span class="icon">Patient Information</span></div>
+                <form method="POST" action="/predict">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Pregnancies</label>
+                            <input type="number" name="Pregnancies" step="1" required value="{{ values.Pregnancies if values else '' }}" placeholder="e.g. 6">
+                            <span class="hint">Number of pregnancies</span>
+                        </div>
+                        <div class="form-group">
+                            <label>Glucose (mg/dL)</label>
+                            <input type="number" name="Glucose" step="0.1" required value="{{ values.Glucose if values else '' }}" placeholder="e.g. 148">
+                            <span class="hint">Normal: 70-140 mg/dL</span>
+                        </div>
+                        <div class="form-group">
+                            <label>Blood Pressure (mm Hg)</label>
+                            <input type="number" name="BloodPressure" step="0.1" required value="{{ values.BloodPressure if values else '' }}" placeholder="e.g. 72">
+                            <span class="hint">Normal: 60-80 mm Hg</span>
+                        </div>
+                        <div class="form-group">
+                            <label>Skin Thickness (mm)</label>
+                            <input type="number" name="SkinThickness" step="0.1" required value="{{ values.SkinThickness if values else '' }}" placeholder="e.g. 35">
+                            <span class="hint">Body fat indicator</span>
+                        </div>
+                        <div class="form-group">
+                            <label>Insulin (mu U/ml)</label>
+                            <input type="number" name="Insulin" step="0.1" required value="{{ values.Insulin if values else '' }}" placeholder="e.g. 0">
+                            <span class="hint">2-hour serum insulin</span>
+                        </div>
+                        <div class="form-group">
+                            <label>BMI</label>
+                            <input type="number" name="BMI" step="0.01" required value="{{ values.BMI if values else '' }}" placeholder="e.g. 33.6">
+                            <span class="hint">Normal: 18.5-24.9</span>
+                        </div>
+                        <div class="form-group">
+                            <label>Diabetes Pedigree Function</label>
+                            <input type="number" name="DiabetesPedigreeFunction" step="0.001" required value="{{ values.DiabetesPedigreeFunction if values else '' }}" placeholder="e.g. 0.627">
+                            <span class="hint">Genetic risk score</span>
+                        </div>
+                        <div class="form-group">
+                            <label>Age</label>
+                            <input type="number" name="Age" step="1" required value="{{ values.Age if values else '' }}" placeholder="e.g. 50">
+                            <span class="hint">Patient age in years</span>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Glucose (mg/dL)</label>
-                        <input type="number" name="Glucose" step="0.1" required value="{{ values.Glucose if values else '' }}">
-                    </div>
-                    <div class="form-group">
-                        <label>Blood Pressure (mm Hg)</label>
-                        <input type="number" name="BloodPressure" step="0.1" required value="{{ values.BloodPressure if values else '' }}">
-                    </div>
-                    <div class="form-group">
-                        <label>Skin Thickness (mm)</label>
-                        <input type="number" name="SkinThickness" step="0.1" required value="{{ values.SkinThickness if values else '' }}">
-                    </div>
-                    <div class="form-group">
-                        <label>Insulin (mu U/ml)</label>
-                        <input type="number" name="Insulin" step="0.1" required value="{{ values.Insulin if values else '' }}">
-                    </div>
-                    <div class="form-group">
-                        <label>BMI</label>
-                        <input type="number" name="BMI" step="0.01" required value="{{ values.BMI if values else '' }}">
-                    </div>
-                    <div class="form-group">
-                        <label>Diabetes Pedigree Function</label>
-                        <input type="number" name="DiabetesPedigreeFunction" step="0.001" required value="{{ values.DiabetesPedigreeFunction if values else '' }}">
-                    </div>
-                    <div class="form-group">
-                        <label>Age</label>
-                        <input type="number" name="Age" step="1" required value="{{ values.Age if values else '' }}">
+                    <button type="submit" class="btn-predict">Predict Diabetes Risk</button>
+                </form>
+            </div>
+
+            <div>
+                {% if result %}
+                <div class="result-card {{ 'safe' if result.prediction == 0 else 'danger' }}">
+                    <div class="result-emoji">{{ '' if result.prediction == 0 else '' }}</div>
+                    <div class="result-label">{{ result.label }}</div>
+                    <div class="result-details">
+                        <div class="result-item">
+                            <div class="label">Confidence</div>
+                            <div class="value">{{ "%.1f"|format(result.confidence) }}%</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="label">Diabetes Risk</div>
+                            <div class="value">{{ "%.1f"|format(result.probability_diabetic) }}%</div>
+                        </div>
                     </div>
                 </div>
-                <button type="submit" class="btn">Predict Diabetes Risk</button>
-            </form>
+                {% else %}
+                <div class="card" style="text-align:center; padding: 40px;">
+                    <div style="font-size: 3em; margin-bottom: 15px;"></div>
+                    <div style="color: #888; font-size: 1em;">Enter patient details and click<br><strong>Predict</strong> to see results</div>
+                </div>
+                {% endif %}
 
-            {% if result %}
-            <div class="result {{ 'safe' if result.prediction == 0 else 'danger' }}">
-                <h2>{{ result.label }}</h2>
-                <p>Confidence: {{ "%.1f"|format(result.confidence) }}%</p>
-                <p>Probability (Diabetic): {{ "%.1f"|format(result.probability_diabetic) }}%</p>
-                <p>Probability (Not Diabetic): {{ "%.1f"|format(result.probability_not_diabetic) }}%</p>
+                {% if error %}
+                <div class="error" style="margin-top: 16px;">{{ error }}</div>
+                {% endif %}
+
+                <div class="model-info">
+                    <h3><span class="icon">Model Performance</span></h3>
+                    <table class="model-table">
+                        <tr><th>Model</th><th>Accuracy</th><th>F1-Score</th></tr>
+                        <tr class="best"><td>Random Forest <span class="badge">Best</span></td><td>77.92%</td><td>0.660</td></tr>
+                        <tr><td>XGBoost</td><td>75.97%</td><td>0.641</td></tr>
+                        <tr><td>SVM</td><td>74.03%</td><td>0.600</td></tr>
+                        <tr><td>Logistic Regression</td><td>70.78%</td><td>0.546</td></tr>
+                    </table>
+                </div>
             </div>
-            {% endif %}
-
-            {% if error %}
-            <div class="error">{{ error }}</div>
-            {% endif %}
         </div>
 
-        <div class="charts">
+        <div class="toggle-section">
+            <button class="toggle-btn" id="toggleCharts" onclick="toggleCharts()">
+                Show Data Analysis & Visualizations
+            </button>
+        </div>
+
+        <div class="charts" id="chartsSection">
             <div class="chart-card">
                 <h3>Feature Correlation Heatmap</h3>
                 <img src="/static/charts/correlation_heatmap.png" alt="Correlation Heatmap">
@@ -101,14 +187,34 @@
                 <img src="/static/charts/model_comparison.png" alt="Model Comparison">
             </div>
             <div class="chart-card">
-                <h3>Confusion Matrix</h3>
+                <h3>Confusion Matrix (Best Model)</h3>
                 <img src="/static/charts/confusion_matrix.png" alt="Confusion Matrix">
             </div>
             <div class="chart-card">
-                <h3>Feature Importance</h3>
+                <h3>Feature Importance (Random Forest)</h3>
                 <img src="/static/charts/feature_importance.png" alt="Feature Importance">
             </div>
         </div>
     </div>
+
+    <div class="footer">
+        Built with Python, Scikit-learn, XGBoost, Flask | 768 patients trained
+    </div>
+
+    <script>
+        function toggleCharts() {
+            var charts = document.getElementById('chartsSection');
+            var btn = document.getElementById('toggleCharts');
+            if (charts.classList.contains('show')) {
+                charts.classList.remove('show');
+                btn.classList.remove('active');
+                btn.innerHTML = 'Show Data Analysis & Visualizations';
+            } else {
+                charts.classList.add('show');
+                btn.classList.add('active');
+                btn.innerHTML = 'Hide Data Analysis & Visualizations';
+            }
+        }
+    </script>
 </body>
 </html>
