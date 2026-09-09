@@ -2,6 +2,8 @@
 
 A machine learning system that predicts diabetes risk using patient medical data. Built with Python, Scikit-learn, XGBoost, and deployed with Flask.
 
+**Live Link:** https://healthcare-predictive-analytics.onrender.com
+
 ## Features
 
 - **4 ML Models Compared**: Logistic Regression, Random Forest, SVM, XGBoost
