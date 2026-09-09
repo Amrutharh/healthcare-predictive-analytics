@@ -3,9 +3,6 @@ import joblib
 import numpy as np
 import os
 import io
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 from fpdf import FPDF
 from datetime import datetime
 
@@ -57,18 +54,6 @@ VALID_RANGES = {
 
 # Fields where 0 is not medically valid (except Pregnancies)
 NON_ZERO_FIELDS = ['Glucose', 'BloodPressure', 'BMI', 'Age']
-
-# Feature importance from Random Forest (approximate values)
-FEATURE_IMPORTANCE = {
-    'Glucose': 0.28,
-    'BMI': 0.18,
-    'Age': 0.15,
-    'DiabetesPedigreeFunction': 0.12,
-    'Insulin': 0.10,
-    'BloodPressure': 0.08,
-    'Pregnancies': 0.05,
-    'SkinThickness': 0.04
-}
 
 def validate_input(data):
     """Validate input data and return list of errors"""
@@ -155,55 +140,7 @@ def analyze_risk(data):
     
     return risk_factors
 
-def generate_contribution_chart(data, prediction):
-    """Generate feature contribution chart using matplotlib"""
-    contributions = []
-    
-    for i, feature in enumerate(FEATURES):
-        value = data[i]
-        importance = FEATURE_IMPORTANCE[feature]
-        
-        if feature in HEALTHY_RANGES:
-            low, high, _ = HEALTHY_RANGES[feature]
-            mid = (low + high) / 2
-            
-            if value == 0:
-                deviation = 0
-            else:
-                deviation = (value - mid) / high
-            
-            # Use importance as weight, positive = risk, negative = protective
-            contribution = deviation * importance
-            contributions.append({
-                'feature': FEATURE_NAMES[feature],
-                'contribution': contribution
-            })
-    
-    # Sort by absolute contribution
-    contributions.sort(key=lambda x: abs(x['contribution']), reverse=True)
-    
-    # Create horizontal bar chart
-    fig, ax = plt.subplots(figsize=(8, 4))
-    
-    features = [c['feature'] for c in contributions]
-    values = [c['contribution'] for c in contributions]
-    colors = ['#e74c3c' if v > 0 else '#27ae60' for v in values]
-    
-    bars = ax.barh(features, values, color=colors, height=0.6)
-    ax.set_xlabel('Contribution to Prediction', fontsize=10)
-    ax.set_title('Feature Contributions (Red = Risk, Green = Protective)', fontsize=11, fontweight='bold')
-    ax.axvline(x=0, color='gray', linestyle='--', linewidth=0.8)
-    ax.invert_yaxis()
-    
-    plt.tight_layout()
-    
-    # Save to bytes
-    img_buffer = io.BytesIO()
-    plt.savefig(img_buffer, format='png', dpi=150, bbox_inches='tight')
-    img_buffer.seek(0)
-    plt.close()
-    
-    return img_buffer
+
 
 def generate_pdf_report(data, result, risk_factors):
     """Generate PDF report"""
@@ -358,12 +295,8 @@ def predict():
         # Analyze risk factors
         risk_factors = analyze_risk(data)
         
-        # Generate contribution chart
-        chart_buffer = generate_contribution_chart(data, prediction)
-        chart_base64 = __import__('base64').b64encode(chart_buffer.getvalue()).decode()
-        
         return render_template('index.html', result=result, values=dict(zip(FEATURES, data)),
-                               risk_factors=risk_factors, chart_image=chart_base64)
+                               risk_factors=risk_factors)
     
     except Exception as e:
         return render_template('index.html', error=str(e))
