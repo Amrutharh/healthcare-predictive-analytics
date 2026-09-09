@@ -13,6 +13,51 @@ scaler = joblib.load('scaler.pkl')
 FEATURES = ['Pregnancies', 'Glucose', 'BloodPressure', 'SkinThickness', 
             'Insulin', 'BMI', 'DiabetesPedigreeFunction', 'Age']
 
+# Valid ranges for input validation
+VALID_RANGES = {
+    'Pregnancies': (0, 20),
+    'Glucose': (30, 300),
+    'BloodPressure': (20, 200),
+    'SkinThickness': (0, 80),
+    'Insulin': (0, 900),
+    'BMI': (5, 70),
+    'DiabetesPedigreeFunction': (0, 2.5),
+    'Age': (1, 120)
+}
+
+# Fields where 0 is not medically valid (except Pregnancies)
+NON_ZERO_FIELDS = ['Glucose', 'BloodPressure', 'BMI', 'Age']
+
+def validate_input(data):
+    """Validate input data and return list of errors"""
+    errors = []
+    
+    # Check if all values are 0 (timepass)
+    all_zero = all(v == 0 for v in data)
+    if all_zero:
+        return ["All values cannot be zero. Please enter real patient data."]
+    
+    # Check each field
+    for i, feature in enumerate(FEATURES):
+        value = data[i]
+        min_val, max_val = VALID_RANGES[feature]
+        
+        # Check negative values
+        if value < 0:
+            errors.append(f"{feature} cannot be negative")
+        
+        # Check if value is 0 but shouldn't be
+        if feature in NON_ZERO_FIELDS and value == 0:
+            errors.append(f"{feature} cannot be zero (medically impossible)")
+        
+        # Check range
+        if value < min_val and value != 0:
+            errors.append(f"{feature} is too low (minimum: {min_val})")
+        elif value > max_val:
+            errors.append(f"{feature} is too high (maximum: {max_val})")
+    
+    return errors
+
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -22,6 +67,11 @@ def predict():
     try:
         # Get data from form
         data = [float(request.form[f]) for f in FEATURES]
+        
+        # Validate input
+        errors = validate_input(data)
+        if errors:
+            return render_template('index.html', validation_errors=errors, values=dict(zip(FEATURES, data)))
         
         # Scale and predict
         data_scaled = scaler.transform([data])
