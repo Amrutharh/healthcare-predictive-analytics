@@ -99,7 +99,7 @@
         <div class="main-grid">
             <div class="card">
                 <div class="card-title"><span class="icon">Patient Information</span></div>
-                <form method="POST" action="/predict">
+                <form method="POST" action="/predict" id="predictionForm">
                     <div class="form-grid">
                         <div class="form-group">
                             <label>Pregnancies</label>
@@ -234,7 +234,7 @@
     </div>
 
     <script>
-        // Show modal if there are validation errors
+        // Show modal if there are server-side validation errors
         {% if validation_errors %}
         document.getElementById('validationModal').classList.add('show');
         {% endif %}
@@ -256,6 +256,72 @@
                 btn.innerHTML = 'Hide Data Analysis & Visualizations';
             }
         }
+
+        // Client-side validation - runs instantly on form submit
+        var VALID_RANGES = {
+            'Pregnancies': [0, 20],
+            'Glucose': [30, 300],
+            'BloodPressure': [20, 200],
+            'SkinThickness': [0, 80],
+            'Insulin': [0, 900],
+            'BMI': [5, 70],
+            'DiabetesPedigreeFunction': [0, 2.5],
+            'Age': [1, 120]
+        };
+        var NON_ZERO_FIELDS = ['Glucose', 'BloodPressure', 'BMI', 'Age'];
+
+        document.getElementById('predictionForm').addEventListener('submit', function(e) {
+            var errors = [];
+            var fields = ['Pregnancies', 'Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI', 'DiabetesPedigreeFunction', 'Age'];
+            var values = [];
+            var allZero = true;
+
+            for (var i = 0; i < fields.length; i++) {
+                var val = parseFloat(document.querySelector('[name="' + fields[i] + '"]').value);
+                values.push(val);
+                if (val !== 0) allZero = false;
+            }
+
+            // Check all zeros
+            if (allZero) {
+                errors.push('All values cannot be zero. Please enter real patient data.');
+            }
+
+            for (var i = 0; i < fields.length; i++) {
+                var field = fields[i];
+                var val = values[i];
+                var range = VALID_RANGES[field];
+
+                // Check negative
+                if (val < 0) {
+                    errors.push(field + ' cannot be negative');
+                }
+
+                // Check zero in non-zero fields
+                if (NON_ZERO_FIELDS.indexOf(field) !== -1 && val === 0) {
+                    errors.push(field + ' cannot be zero (medically impossible)');
+                }
+
+                // Check range
+                if (val < range[0] && val !== 0) {
+                    errors.push(field + ' is too low (minimum: ' + range[0] + ')');
+                } else if (val > range[1]) {
+                    errors.push(field + ' is too high (maximum: ' + range[1] + ')');
+                }
+            }
+
+            if (errors.length > 0) {
+                e.preventDefault();
+                var errorList = document.querySelector('.modal-errors ul');
+                errorList.innerHTML = '';
+                for (var j = 0; j < errors.length; j++) {
+                    var li = document.createElement('li');
+                    li.textContent = errors[j];
+                    errorList.appendChild(li);
+                }
+                document.getElementById('validationModal').classList.add('show');
+            }
+        });
     </script>
 </body>
 </html>
